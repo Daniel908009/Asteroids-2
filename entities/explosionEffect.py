@@ -4,7 +4,7 @@ import random
 import math
 
 class ExplosionEffect(Entity):
-    def __init__(self, game, effect_type, position, size):
+    def __init__(self, game, effect_type, position, size, sound = None):
         super().__init__(position)
         self.game = game
         self.explosion_time = 0.5
@@ -13,7 +13,11 @@ class ExplosionEffect(Entity):
             self.image = self.createExplosionSprite(size, (255, 50, 0))
         elif effect_type == "player":
             self.image = self.createExplosionSprite(size, (0, 50, 255))
+        elif effect_type == "ufo":
+            self.image = self.createExplosionSprite(size, (50, 255, 50))
         self.rect = self.image.get_rect(center=self.position)
+        if sound:
+            sound.play()
     def update(self, delta_time):
         self.current_time += delta_time
         if self.current_time >= self.explosion_time:

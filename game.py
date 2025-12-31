@@ -1,20 +1,30 @@
 import pygame
 from entities.player import Player
-from utilities.widgets import StartMenuWidget, GameOverWidget, HighScoresWidget, GameHUD, PauseMenuWidget, SettingsWidget
+from utilities.widgets import StartMenuWidget, GameOverWidget, HighScoresWidget, GameHUD, PauseMenuWidget, SettingsWidget, ManualSelectionWidget
 from utilities.spawner import Spawner
 from entities.explosionEffect import ExplosionEffect
 from settings import Settings
 import json
 import random
+import math
 
 class Game:
     def __init__(self):
         self.state = "menu"
         self.settings = Settings()
-        self.screen = pygame.display.set_mode((self.settings.SCREEN_WIDTH, self.settings.SCREEN_HEIGHT))
+        self.isFullscreen = False
+        if self.settings.FULLSCREEN:
+            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            self.isFullscreen = True
+        else:
+            self.screen = pygame.display.set_mode((self.settings.SCREEN_WIDTH, self.settings.SCREEN_HEIGHT))
         pygame.display.set_caption("Asteroids")
         pygame.mouse.set_visible(False)
         pygame.display.set_icon(pygame.image.load("Assets/spaceship_thrust.png"))
+        self.base_area = 1000 * 800
+        self.current_area = self.screen.get_width() * self.screen.get_height()
+        self.scale_diff = math.floor(((self.current_area / self.base_area) ** 0.5) * 10) / 10
+        self.time_diff = 1
         self.score = 0
         self.player = Player((self.screen.get_width() // 2, self.screen.get_height() // 2), self)
         self.running = True
@@ -31,6 +41,7 @@ class Game:
         self.game_hud = GameHUD(self)
         self.paused_menu = PauseMenuWidget(self)
         self.settings_menu = SettingsWidget(self)
+        self.manual_menu = ManualSelectionWidget(self)
         self.player_name = ""
         pygame.mixer.set_num_channels(32)
         self.gameMusicList = ["Assets/music1.mp3","Assets/music2.mp3","Assets/music3.mp3"]
@@ -39,9 +50,18 @@ class Game:
         random.shuffle(self.menuMusicList)
         self.currentGameMusic = 0
         self.currentMenuMusic = 0
+        self.time_survived = 0
     def run(self):
         while self.running:
             dt = self.clock.tick(self.settings.FPS) / 1000
+            if self.isFullscreen != self.settings.FULLSCREEN:
+                self.isFullscreen = self.settings.FULLSCREEN
+                if self.isFullscreen:
+                    self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                    self.scale_diff = math.floor(((self.screen.get_width() * self.screen.get_height() / self.base_area) ** 0.5) * 10) / 10
+                else:
+                    self.screen = pygame.display.set_mode((self.settings.SCREEN_WIDTH, self.settings.SCREEN_HEIGHT))
+                    self.scale_diff = math.floor(((self.settings.SCREEN_WIDTH * self.settings.SCREEN_HEIGHT / self.base_area) ** 0.5) * 10) / 10
             self.handleInputs()
             pygame.display.flip()
             if self.state == "menu":
@@ -59,6 +79,8 @@ class Game:
                             random.shuffle(self.menuMusicList)
                             if currentlyPlayingName != self.menuMusicList[0]:
                                 break
+                elif not self.settings.MUSIC_ON:
+                    pygame.mixer.music.stop()
             elif self.state == "playing":
                 self.play_game(dt)
                 self.update(dt)
@@ -90,6 +112,8 @@ class Game:
                 self.paused_menu.draw(self.screen)
             elif self.state == "settings":
                 self.settings_menu.draw(self.screen)
+            elif self.state == "manual":
+                self.manual_menu.draw(self.screen)
                 
     def handleInputs(self):
         for event in pygame.event.get():
@@ -118,6 +142,8 @@ class Game:
                     self.paused_menu.handle_event(event)
                 elif self.state == "settings":
                     self.settings_menu.handle_event(event)
+                elif self.state == "manual":
+                    self.manual_menu.handle_event(event)
             if event.type == pygame.MOUSEBUTTONDOWN and self.state == "playing":
                 if event.button == 1:
                     self.player.shoot()
@@ -132,6 +158,8 @@ class Game:
         self.all_sprites.update(dt)
         self.spawner.update(dt)
         self.check_collisions()
+        self.time_survived += dt
+        self.time_diff = 1 + self.settings.MAX_EXTRA * (1 - math.exp(-self.time_survived / self.settings.TIME_CONSTANT))
     def check_collisions(self):
         everything_hits = pygame.sprite.spritecollide(self.player, self.all_sprites, False)
         for hit in everything_hits:
@@ -204,7 +232,15 @@ class Game:
                         exp = ExplosionEffect(self, "player", (self.player.pos.x, self.player.pos.y), self.player.rect.width//2, None)
                         self.all_sprites.add(exp)
     def reset(self):
-        pass
+        self.score = 0
+        self.time_survived = 0
+        self.player.reset()
+        self.all_sprites.empty()
+        self.asteroids.empty()
+        self.ufos.empty()
+        self.laserBullets.empty()
+        self.all_sprites.add(self.player)
+        self.spawner.reset()
     def save_high_score(self, name, score):
         name = name.strip()
         if not name:
@@ -227,7 +263,7 @@ class Game:
                 processed_data = []
                 for entry in data:
                     processed_data.append((entry["name"], entry["score"]))
-                high_scores = sorted(processed_data, key=lambda x: x[1], reverse=True)[:10]
+                high_scores = sorted(processed_data, key=lambda x: x[1], reverse=True)[:100]
                 file.close()
         except (FileNotFoundError, json.JSONDecodeError):
             pass

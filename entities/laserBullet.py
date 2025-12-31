@@ -17,8 +17,8 @@ class LaserBullet(Entity):
     def update(self, delta_time):
         self.pos += self.velocity * delta_time
         self.rect.center = self.pos
-        if (self.pos.x < 0-self.rect.width or self.pos.x > self.game.settings.SCREEN_WIDTH + self.rect.width or
-            self.pos.y < 0-self.rect.height or self.pos.y > self.game.settings.SCREEN_HEIGHT + self.rect.height):
+        if (self.pos.x < 0-self.rect.width or self.pos.x > self.game.screen.get_width() + self.rect.width or
+            self.pos.y < 0-self.rect.height or self.pos.y > self.game.screen.get_height() + self.rect.height):
             self.game.laserBullets.remove(self)
             self.game.all_sprites.remove(self)
             self.kill()

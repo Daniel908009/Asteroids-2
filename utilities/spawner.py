@@ -4,15 +4,18 @@ import random
 from entities.UFO import UFO
 
 class Spawner:
-    def __init__(self, game, asteroid_spawn_interval=None, ufo_spawn_interval=None, ufoGroup=None, asteroidGroup=None, allSpritesGroup=None):
+    def __init__(self, game, asteroid_spawn_interval=None, ufo_spawn_interval=None, ufoGroup=None, asteroidGroup=None, allSpritesGroup=None, shootingAllowed=True):
         self.game = game
         self.asteroid_spawn_interval = self.game.settings.ASTEROID_SPAWN_INTERVAL if asteroid_spawn_interval is None else asteroid_spawn_interval    
         self.ufo_spawn_interval = self.game.settings.UFO_SPAWN_INTERVAL if ufo_spawn_interval is None else ufo_spawn_interval
+        self.asteroid_spawn_interval = self.asteroid_spawn_interval / (self.game.scale_diff * self.game.time_diff)
+        self.ufo_spawn_interval = self.ufo_spawn_interval / (self.game.scale_diff * self.game.time_diff)
         self.asteroid_timer = 0
         self.ufo_timer = 0
         self.ufo_group = ufoGroup
         self.asteroid_group = asteroidGroup
         self.all_sprites = allSpritesGroup
+        self.UFO_shootingAllowed = shootingAllowed
     def update(self, dt):
         self.asteroid_timer += dt
         self.ufo_timer += dt
@@ -22,8 +25,16 @@ class Spawner:
         if self.ufo_timer > self.ufo_spawn_interval and self.ufo_spawn_interval is not False:
             self.spawn_ufo()
             self.ufo_timer = 0
+        self.updated_scaling_diff()
+    def updated_scaling_diff(self):
+        new_asteroid_interval = self.game.settings.ASTEROID_SPAWN_INTERVAL / (self.game.scale_diff * self.game.time_diff)
+        new_ufo_interval = self.game.settings.UFO_SPAWN_INTERVAL / (self.game.scale_diff * self.game.time_diff)
+        if new_asteroid_interval != self.asteroid_spawn_interval:
+            self.asteroid_spawn_interval = new_asteroid_interval
+        if new_ufo_interval != self.ufo_spawn_interval:
+            self.ufo_spawn_interval = new_ufo_interval
     def spawn_asteroid(self):
-        radius = max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 + 100
+        radius = max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 + max(self.game.screen.get_width(), self.game.screen.get_height()) / 4
         center = pygame.Vector2(self.game.screen.get_width() / 2, self.game.screen.get_height() / 2)
         angle = random.uniform(0, 360)
         pos = center + pygame.Vector2(radius, 0).rotate(angle)
@@ -56,15 +67,19 @@ class Spawner:
         pygame.draw.polygon(surface, (255,255,255), points)
         return surface
     def spawn_ufo(self):
-        radius = max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 + 100
+        radius = max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 + max(self.game.screen.get_width(), self.game.screen.get_height()) / 4
         center = pygame.Vector2(self.game.screen.get_width() / 2, self.game.screen.get_height() / 2)
         angle = random.uniform(0, 360)
         pos = center + pygame.Vector2(radius, 0).rotate(angle)
         targetLocation = pygame.Vector2(random.uniform(self.game.screen.get_width()//4, self.game.screen.get_width() - self.game.screen.get_width()//4), random.uniform(self.game.screen.get_height()//4, self.game.screen.get_height() - self.game.screen.get_height()//4))
         direction = (targetLocation - pos).normalize()
         velocity = direction * self.game.settings.UFO_SPEED
-        ufo = UFO(self.game, pos, velocity)
+        ufo = UFO(self.game, pos, velocity, shootingAllowed=self.UFO_shootingAllowed)
         self.all_sprites.add(ufo)
         if self.asteroid_group is not None:
             self.ufo_group.add(ufo)
-        pygame.mixer.Sound("Assets/ufo-arrival.mp3").play()
+        if self.game.settings.SOUND_ON and self.game.state == "playing":
+            pygame.mixer.Sound("Assets/ufo-arrival.mp3").play()
+    def reset(self):
+        self.asteroid_timer = 0
+        self.ufo_timer = 0

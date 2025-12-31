@@ -17,8 +17,8 @@ class Asteroid(Entity):
     def update(self, delta_time):
         self.position += self.velocity * delta_time
         self.rect.center = self.position
-        if self.position.x < -100 - self.rect.width or self.position.x > self.game.settings.SCREEN_WIDTH + self.rect.width or \
-           self.position.y < -100 - self.rect.height or self.position.y > self.game.settings.SCREEN_HEIGHT + self.rect.height:
+        if self.position.x < -max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 - self.rect.width or self.position.x > self.game.screen.get_width() + self.rect.width + max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 or \
+           self.position.y < -max(self.game.screen.get_width(), self.game.screen.get_height()) / 2 - self.rect.height or self.position.y > self.game.screen.get_height() + self.rect.height + max(self.game.screen.get_width(), self.game.screen.get_height()) / 2:
             self.game.asteroids.remove(self)
             self.game.all_sprites.remove(self)
             self.kill()

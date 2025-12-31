@@ -59,8 +59,8 @@ class Player(Entity):
             self.movementVector = self.movementVector.normalize() * speed
         self.pos += self.movementVector * delta_time
         self.rect.center = self.pos
-        self.pos.x %= self.game.settings.SCREEN_WIDTH
-        self.pos.y %= self.game.settings.SCREEN_HEIGHT
+        self.pos.x %= self.game.screen.get_width()
+        self.pos.y %= self.game.screen.get_height()
     def shoot(self):
         if self.timeSinceLastShot >= self.game.settings.PLAYER_SHOOT_COOLDOWN:
             bullet = LaserBullet(self.pos, self.angle, self.game, self)
@@ -99,3 +99,14 @@ class Player(Entity):
             return self.shieldTimeSinceUsed / self.shieldCooldown
         elif self.shield is not None:
             return (self.shield.elapsed_time / self.shield.duration) * -1 + 1
+    def reset(self):
+        self.pos = pygame.math.Vector2(self.game.screen.get_width() / 2, self.game.screen.get_height() / 2)
+        self.rect.center = self.pos
+        self.health = self.game.settings.PLAYER_HEALTH
+        self.angle = 0
+        self.movementVector = pygame.math.Vector2(0, 0)
+        self.timeSinceLastShot = 0
+        if self.shield is not None:
+            self.shieldDown()
+        self.shieldReady = True
+        self.shieldTimeSinceUsed = 0

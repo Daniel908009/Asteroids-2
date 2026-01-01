@@ -144,6 +144,8 @@ class HighScoresWidget:
         font = pygame.font.SysFont("monospace", int(fontsize * self.game.settings.UI_MENU_SCALE))
         high_scores = self.game.load_high_scores()
         high_scores = self.process_high_scores(high_scores)
+        if not high_scores:
+            high_scores = ["No high scores yet."]
         self.options = high_scores
         for i in range(len(high_scores)):
             color = (255, 255, 255)
@@ -178,9 +180,9 @@ class HighScoresWidget:
         elif event.key == pygame.K_BACKSPACE or event.key == pygame.K_RETURN:
             self.game.state = "menu"
         elif event.key == pygame.K_w or event.key == pygame.K_UP:
-            self.selected_option = (self.selected_option - 1) % len(self.options)
+            self.selected_option = (self.selected_option - 1) % len(self.options) if len(self.options) > 0 else 1
         elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
-            self.selected_option = (self.selected_option + 1) % len(self.options)
+            self.selected_option = (self.selected_option + 1) % len(self.options) if len(self.options) > 0 else 1
 
 class GameHUD:
     def __init__(self, game):

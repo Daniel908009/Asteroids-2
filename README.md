@@ -60,5 +60,5 @@ Steps:
    python3 main.py
    ```
 2. Using .exe file
-   1. Simply download the .exe file from the latest release. It should be on the right side of the repository webpage
+   1. Simply download the executable file from the latest release (Pick one based on your OS). It should be on the right side of the repository webpage
    2. Run the executable

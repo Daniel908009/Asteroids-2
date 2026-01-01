@@ -61,4 +61,5 @@ Steps:
    ```
 2. Using .exe file
    1. Simply download the executable file from the latest release (Pick one based on your OS). It should be on the right side of the repository webpage
-   2. Run the executable
+   2. Sometimes you need to change the permisions of the file and allow it to run as an executable
+   3. Run the executable

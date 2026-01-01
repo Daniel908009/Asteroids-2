@@ -23,7 +23,7 @@ When the game ends, you will be prompted to enter your name so your score can be
 - **W, D** for up and down in the menu
 - **Enter, Space** for selecting in the menu
 - **Backspace** return
-- **Escape** Close game
+- **Escape** Close game<br/>
 The rest of the controls are in the game itself (Manual in the main menu)
 
 ## Features
@@ -35,15 +35,30 @@ The rest of the controls are in the game itself (Manual in the main menu)
 
 ## Screenshots
 ### !Important: Each screenshot has a description below it so you can understand what you are seeing.
-
-<img src="" alt="Main menu" width="600"/><br/>
+<img width="2256" height="1504" alt="Main menu" src="https://github.com/user-attachments/assets/3a5f21dc-0a6c-4454-872e-c6191c5791a1" /> <br/>
 This is the main menu.
 
+<img width="2256" height="1504" alt="image" src="https://github.com/user-attachments/assets/3c1d2872-d37e-4b5a-b493-85e6a310c16b" /> <br/>
+This is the actual game.
+
+<img width="2256" height="1504" alt="image" src="https://github.com/user-attachments/assets/a4f6f3b4-434f-44c3-9935-dce286378ebc" /> <br/>
+This is how the settings are displayed.
+
+<img width="2256" height="1504" alt="image" src="https://github.com/user-attachments/assets/6c3bd52b-b27b-4161-bf65-2521b3597b40" /> <br/>
+This is how changing of value in the settings looks.
 
 ## How to download and run locally
-
-1. Using the raw code
+(Python 3.10+ recommended)
+1. From source code
 Steps:
+   1. Download this repository as a .zip file
+   2. Put it in the folder where you want your game to be and extract it
+   3. Install Python if you dont have it
+   4. Open a command prompt and run these two commands
    ```bash
+   pip install -r requirements.txt
+   python3 main.py
    ```
 2. Using .exe file
+   1. Simply download the .exe file from the latest release. It should be on the right side of the repository webpage
+   2. Run the executable
